@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интерактивная демонстрация</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.5s ease;
+        }
+
+        .screen {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Первый экран - красно-белый фон */
+        .screen1 {
+            background: linear-gradient(45deg, #ff0000, #ffffff);
+            background-size: 400% 400%;
+            animation: gradientShift 3s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .pink-window {
+            background: #ffb3d9;
+            border: 3px solid #ff66b3;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 300px;
+            margin: 0 auto;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        }
+
+        .pink-window h2 {
+            color: #cc0066;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .btn {
+            background: #ff6699;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #ff3377;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        /* Второй экран - жёлтый фон с белыми точками */
+        .screen2 {
+            background: #ffff00;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen2::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: radial-gradient(circle, white 2px, transparent 2px);
+            background-size: 40px 40px;
+            animation: movePattern 10s linear infinite;
+        }
+
+        @keyframes movePattern {
+            0% { transform: translateX(0) translateY(0); }
+            100% { transform: translateX(40px) translateY(40px); }
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            background: rgba(255,255,0,0.9);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .greeting {
+            font-size: 24px;
+            color: #cc6600;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .typing-text {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 20px;
+            min-height: 60px;
+            text-align: left;
+        }
+
+        .contract-section {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 8px;
+        }
+
+        .contract-section.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 15px 0;
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            cursor: pointer;
+            transform: scale(1.2);
+        }
+
+        .confirm-btn {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .confirm-btn.enabled {
+            background: #00cc00;
+            cursor: pointer;
+        }
+
+        .confirm-btn.enabled:hover {
+            background: #00aa00;
+        }
+
+        /* Третий экран - красный фон */
+        .screen3 {
+            background: #ff0000;
+            color: white;
+        }
+
+        .final-message {
+            font-size: 48px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        .typewriter {
+            overflow: hidden;
+            border-right: 2px solid #333;
+            white-space: nowrap;
+            margin: 0 auto;
+            animation: typing 3s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: #333; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Первый экран -->
+    <div class="screen screen1 active">
+        <div class="pink-window">
+            <h2>Вот что-то:</h2>
+            <button class="btn" onclick="showScreen2()">Нажми</button>
+        </div>
+    </div>
+
+    <!-- Второй экран -->
+    <div class="screen screen2">
+        <div class="content">
+            <div class="greeting">Привет)</div>
+            <div class="typing-text" id="typingText"></div>
+            <div class="contract-section" id="contractSection">
+                <div class="checkbox-container">
+                    <input type="checkbox" class="checkbox" id="agreementCheckbox" onchange="toggleConfirmButton()">
+                    <label for="agreementCheckbox">Я согласен</label>
+                </div>
+                <button class="btn confirm-btn" id="confirmBtn" onclick="showScreen3()" disabled>Подтвердить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Третий экран -->
+    <div class="screen screen3">
+        <div class="final-message">НИЧЕГО СЕБЕ!</div>
+    </div>
+
+    <script>
+        let currentScreen = 1;
+
+        function showScreen2() {
+            document.querySelector('.screen1').classList.remove('active');
+            document.querySelector('.screen2').classList.add('active');
+            document.body.style.background = '#ffff00';
+            
+            // Показываем приветствие, затем через 2 секунды начинаем печатать текст
+            setTimeout(() => {
+                typeText();
+            }, 2000);
+        }
+
+        function typeText() {
+            const text = 'Подпишите договор: Я согласен на то, что через 5 секунд появится красный фон с надписью «НИЧЕГО СЕБЕ!»';
+            const textElement = document.getElementById('typingText');
+            const contractSection = document.getElementById('contractSection');
+            
+            textElement.innerHTML = '';
+            
+            let i = 0;
+            const typeInterval = setInterval(() => {
+                if (i < text.length) {
+                    textElement.innerHTML += text.charAt(i);
+                    i++;
+                } else {
+                    clearInterval(typeInterval);
+                    // Показываем секцию с чекбоксом
+                    contractSection.classList.add('show');
+                }
+            }, 50);
+        }
+
+        function toggleConfirmButton() {
+            const checkbox = document.getElementById('agreementCheckbox');
+            const confirmBtn = document.getElementById('confirmBtn');
+            
+            if (checkbox.checked) {
+                confirmBtn.disabled = false;
+                confirmBtn.classList.add('enabled');
+            } else {
+                confirmBtn.disabled = true;
+                confirmBtn.classList.remove('enabled');
+            }
+        }
+
+        function showScreen3() {
+            const confirmBtn = document.getElementById('confirmBtn');
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = 'Подтверждено';
+            
+            // Постепенный переход к красному фону за 5 секунд
+            let progress = 0;
+            const transitionInterval = setInterval(() => {
+                progress += 2; // Увеличиваем на 2% каждые 100мс
+                
+                // Плавно меняем фон от жёлтого к красному
+                const red = Math.min(255, Math.floor(255 * (progress / 100)));
+                const yellow = Math.max(0, 255 - Math.floor(255 * (progress / 100)));
+                document.body.style.background = `rgb(${red}, ${yellow}, 0)`;
+                
+                if (progress >= 100) {
+                    clearInterval(transitionInterval);
+                    // Показываем финальный экран
+                    document.querySelector('.screen2').classList.remove('active');
+                    document.querySelector('.screen3').classList.add('active');
+                    document.body.style.background = '#ff0000';
+                }
+            }, 100);
+        }
+    </script>
+</body>
+</html>
